@@ -21,52 +21,50 @@ def analytics_view(request):
     data = {}
 
     if filter_by == 'hour':
-
-        sales_by_hour = SaleItem.objects.filter(sale__date=today) \
+        sales_by_hour = SaleItem.objects.filter(sale__date=today, sale__void=False) \
             .annotate(hour=ExtractHour('time')) \
             .values('hour') \
             .annotate(total_sales=Sum('price')) \
             .order_by('-total_sales')
         data['sales_by_hour'] = list(sales_by_hour)
-
         logger.info(data)
 
     elif filter_by == 'day':
 
-        today_sales = Sale.objects.filter(date=today).aggregate(total=Sum('total_amount'))
-        yesterday_sales = Sale.objects.filter(date=yesterday).aggregate(total=Sum('total_amount'))
+        today_sales = Sale.objects.filter(date=today, void=False).aggregate(total=Sum('total_amount'))
+        yesterday_sales = Sale.objects.filter(date=yesterday, void=False).aggregate(total=Sum('total_amount'))
 
         data['today_sales'] = today_sales['total'] or 0
         data['yesterday_sales'] = yesterday_sales['total'] or 0
 
     elif filter_by == 'month':
 
-        month_sales = Sale.objects.filter(date__gte=start_of_month).aggregate(total=Sum('total_amount'))
+        month_sales = Sale.objects.filter(date__gte=start_of_month, void=False).aggregate(total=Sum('total_amount'))
         data['month_sales'] = month_sales['total'] or 0
 
     elif filter_by == 'year':
         
-        year_sales = Sale.objects.filter(date__gte=start_of_year).aggregate(total=Sum('total_amount'))
+        year_sales = Sale.objects.filter(date__gte=start_of_year, void=False).aggregate(total=Sum('total_amount'))
         data['year_sales'] = year_sales['total'] or 0
 
     # Best-selling meal
-    best_selling_meal = SaleItem.objects.values('meal__name') \
+    best_selling_meal = SaleItem.objects.filter(sale__void=False).values('meal__name') \
         .annotate(total_sold=Sum('quantity')) \
         .order_by('-total_sold') \
         .first()
     
     data['best_selling_meal'] = best_selling_meal
 
-    meal_sales = SaleItem.objects.filter(meal__meal=True, sale__date=today)
+    meal_sales = SaleItem.objects.filter(meal__meal=True, sale__date=today, sale__void=False)
     logger.info(f'today meal sales: {meal_sales}')
 
-    dish_sales = SaleItem.objects.filter(dish__dish=True, sale__date=today)
+    dish_sales = SaleItem.objects.filter(dish__dish=True, sale__date=today, sale__void=False)
     logger.info(f'today dish sales: {dish_sales}')\
     
     grouped_meals = defaultdict(lambda: {})
     grouped_dishes = defaultdict(lambda: {})
 
-    sales = SaleItem.objects.select_related('sale', 'meal', 'dish').all()
+    sales = SaleItem.objects.filter(sale__void=False).select_related('sale', 'meal', 'dish').all()
 
     if not sales:
         logger.warning("No sales data found.")
