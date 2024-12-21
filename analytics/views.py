@@ -40,10 +40,12 @@ def analytics_view(request):
     elif filter_by == 'month':
 
         month_sales = Sale.objects.filter(date__gte=start_of_month, void=False).aggregate(total=Sum('total_amount'))
+        month_sales = Sale.objects.filter(date__gte=start_of_month, void=False).aggregate(total=Sum('total_amount'))
         data['month_sales'] = month_sales['total'] or 0
 
     elif filter_by == 'year':
         
+        year_sales = Sale.objects.filter(date__gte=start_of_year, void=False).aggregate(total=Sum('total_amount'))
         year_sales = Sale.objects.filter(date__gte=start_of_year, void=False).aggregate(total=Sum('total_amount'))
         data['year_sales'] = year_sales['total'] or 0
 
@@ -99,6 +101,18 @@ def analytics_view(request):
                 else:
                     grouped_dishes[category][dish_name] = {
                         'name': dish_name,
+                        'quantity': sale.quantity,
+                        'price': sale.price * sale.quantity,
+                    }
+                    
+            elif sale.product:
+                product_name = sale.product.name
+                if product_name in grouped_dishes[category]:
+                    grouped_dishes[category][product_name]['quantity'] += sale.quantity
+                    grouped_dishes[category][product_name]['price'] += sale.price * sale.quantity
+                else:
+                    grouped_dishes[category][product_name] = {
+                        'name': product_name,
                         'quantity': sale.quantity,
                         'price': sale.price * sale.quantity,
                     }
