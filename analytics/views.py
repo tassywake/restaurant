@@ -31,7 +31,7 @@ def analytics_view(request):
 
     elif filter_by == 'day':
 
-        today_sales = Sale.objects.filter(date=today).aggregate(total=Sum('total_amount'))
+        today_sales = Sale.objects.filter(date=today, void=False).aggregate(total=Sum('total_amount'))
         yesterday_sales = Sale.objects.filter(date=yesterday, void=False).aggregate(total=Sum('total_amount'))
         
         today_void_sales = Sale.objects.filter(date=today, void=True).aggregate(total=Sum('total_amount'))
