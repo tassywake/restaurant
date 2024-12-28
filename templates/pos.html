@@ -857,23 +857,20 @@
                 chargeModal.show()
             }
         })
-    
+        
+        let count = 0
         function addToCart(id, name, price, type, meal, dish) {
-          const existingMeal = cart.find(m => m.id === id);
-          if (existingMeal) {
-            existingMeal.quantity += 1;
-          } else {
-            if(type){
+        //   const existingMeal = cart.find(m => m.count === id);
+        if(type){
                 type=true
             }else{
                 type=false
             }
-            
-            const item = { id, name, price, quantity: 1, type, meal, dish};
+            count+=1
+            const item = { id,count , name, price, quantity: 1, type, meal, dish};
             cart.push(item);
-          }
-          console.log(cart)
-          updateOrderDetails();
+            console.log(cart)
+            updateOrderDetails();
         }
         
         function updateOrderDetails() {
@@ -905,7 +902,7 @@
               input.value = meal.quantity;
               input.addEventListener('change', () => {
                 meal.quantity = parseInt(input.value);
-                updateCart(meal.id
+                updateCart(meal.count
                     , meal.quantity
                 );
               });
@@ -942,8 +939,8 @@
             document.getElementById('payModal').innerHTML = `Total Order Amount: <span class'text-bold'>${total.toFixed(2)}</span>`;
           }
 
-    function updateCart(mealId, quantity) {
-        const meal = cart.findIndex(meal => meal.id === mealId);
+    function updateCart(mealCount, quantity) {
+        const meal = cart.findIndex(meal => meal.count === mealCount);
         if (meal){
             cart[meal].quantity = quantity;
         }
@@ -1106,9 +1103,7 @@
             </style>
 
             <div style="
-                width: 80mm; 
-                height:120mm; 
-                font-family: Arial, 
+                font-family: Arial;
                 sans-serif; 
                 font-size: 14px;
                 "
